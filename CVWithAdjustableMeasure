@@ -1,0 +1,263 @@
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn import svm
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
+from sklearn import preprocessing
+from sklearn.utils.class_weight import compute_sample_weight
+
+
+import random
+import numpy as np
+import random
+from sklearn.model_selection import train_test_split
+import sklearn.metrics
+
+def A():
+    return [-0.57, 0.39, -0.96, -0.61, -0.69]
+
+def R():
+    return [-0.40, -0.83, -0.61, 1.26, -0.28]
+
+def N():
+    return [-0.70, -0.63, -1.47, 1.02, 1.06]
+
+def D():
+    return [-1.62, -0.52, -0.67, 1.02, 1.47]
+
+def C():
+    return [0.07, 2.04, 0.65, -1.13, -0.39]
+
+def Q():
+    return [-0.05, -1.50, -0.67, 0.49, 0.21]
+
+def E():
+    return [-0.64, -1.59, -0.39, 0.69, 1.04]
+
+def G():
+    return [-0.90, 0.87, -0.36, 1.08, 1.95]
+
+def H():
+    return [0.73, -0.67, -0.42, 1.13, 0.99]
+
+def I():
+    return [0.59, 0.79, 1.44, -1.90, -0.93]
+
+def L():
+    return [0.65, 0.84, 1.25, -0.99, -1.90]
+
+def K():
+    return [-0.64, -1.19, -0.65, 0.68, -0.13]
+
+def M():
+    return [0.76, 0.05, 0.06, -0.62, -1.59]
+
+def F():
+    return [1.87, 1.04, 1.28, -0.61, -0.16]
+
+def P():
+    return [-1.82, -0.63, 0.32, 0.03, 0.68]
+
+def S():
+    return [-0.39, -0.27, -1.51, -0.25, 0.31]
+
+def T():
+    return [-0.04, -0.30, -0.82, -1.02, -0.04]
+
+def W():
+    return [1.38, 1.69, 1.91, 1.07, -0.05]
+
+def Y():
+    return [1.75, 0.11, 0.65, 0.21, -0.41]
+
+def V():
+    return [-0.02, 0.30, 0.97, -1.55, -1.16]
+
+def BLOMAP(char):
+    switcher = {
+        'A': A(),
+        'R': R(),
+        'N': N(),
+        'D': D(),
+        'C': C(),
+        'Q': Q(),
+        'E': E(),
+        'G': G(),
+        'H': H(),
+        'I': I(),
+        'L': L(),
+        'K': K(),
+        'M': M(),
+        'F': F(),
+        'P': P(),
+        'S': S(),
+        'T': T(),
+        'W': W(),
+        'Y': Y(),
+        'V': V(),
+    }
+    func = switcher.get(char, lambda: "Char is not a amino acid")
+    return func
+
+
+Training = []
+TrainingTargets = []
+Validation = []
+ValidationTargets = []
+
+
+filename = 'project_training.txt'
+file = open(filename, 'r')
+lines = list(file)
+File = []
+Peptides = []
+Targets = []
+
+for element in lines:
+    element = element.replace('\r', '')
+    element = element.replace('\n', '')
+    element = element.split('\t')
+    File.append(element)
+
+# delete header row
+File.pop(0)
+# shuffle the dataset
+random.shuffle(File)
+for element in enumerate(File[0::]):
+    for peptide in element[1][0:1:]:
+        ascii = []
+        for char in peptide:
+            encoded = BLOMAP(char)
+            ascii.append(encoded[0])
+            ascii.append(encoded[1])
+            ascii.append(encoded[2])
+            ascii.append(encoded[3])
+            ascii.append(encoded[4])
+        File[element[0]][0] = ascii
+        Peptides.append(File[element[0]][0])
+        Targets.append(int(File[element[0]][2]))
+
+for j in range(10):
+
+    #Verschiedene Classifier aukommentiert, damit man nicht alles immer tippen muss
+
+    #Montagswerte 77% bei Kaggle!!!!!
+    #clf = GradientBoostingClassifier(n_estimators=100, learning_rate=0.075, min_samples_split=61, min_samples_leaf=44 ,max_depth=5, subsample=0.8, max_features='sqrt')
+    
+    #Dienstagswerte:
+        clf = GradientBoostingClassifier(n_estimators=70, learning_rate=0.075, min_samples_split=7, min_samples_leaf=30,
+                                     max_depth=9, subsample=0.75, max_features=16)
+    #Mittwochswerte:        
+        clf = GradientBoostingClassifier(n_estimators=90, learning_rate=0.1, min_samples_split=7, min_samples_leaf=40, max_depth=8,
+                                             max_features=15, subsample=0.7, random_state=10)
+    
+    #clf = GradientBoostingClassifier(n_estimators=160, learning_rate=0.04, min_samples_split=12, min_samples_leaf=20 ,max_depth=5, subsample=0.8)
+    #clf = svm.SVC(C=5, gamma=0.016, kernel='rbf')
+    #clf = AdaBoostClassifier(n_estimators=150, learning_rate=0.04)
+    #clf = RandomForestClassifier(n_estimators=100, max_depth=None, min_samples_split=2, random_state=0)
+
+
+
+    Training = []
+    TrainingTargets = []
+    Validation = []
+    ValidationTargets = []
+    for x in range(len(File)):
+        if random.uniform(0, 1) >= 0: #Steht bewusst auf 0 damit bei der Cross-Validation keine Information Verloren geht
+            Training.append(File[x][0]); TrainingTargets.append(File[x][2])
+        else:
+            Validation.append(File[x][0]); ValidationTargets.append(File[x][2])
+    Training = np.asarray(Training)
+    lb = preprocessing.LabelBinarizer()
+    TrainingTargets = np.array([number[0] for number in lb.fit_transform(TrainingTargets)])
+    scores = cross_val_score(clf, Training, TrainingTargets, cv=10, scoring='roc_auc')
+    print(scores)
+    print(sum(scores)/10, "  ", j)
+    Training=[]
+    TrainingTargets = []
+    Validation = []
+    ValidationTargets = []
+    for x in range(len(File)):
+        if random.uniform(0, 1) >= 0.1: #Hier keine 0 damit wir den Fit durchführen und prüfen können
+            Training.append(File[x][0]); TrainingTargets.append(File[x][2])
+        else:
+            Validation.append(File[x][0]); ValidationTargets.append(File[x][2])
+    clf.fit(Training, TrainingTargets)
+    result = clf.predict(Validation)
+    result1=[]
+    for i in range(len(result)): result1.append(str(result[i]))
+    print (sum (1 for i in range(len(ValidationTargets)) if (result1[i] == ValidationTargets[i]))/(len(ValidationTargets)))
+    ones = sum(1 for i in ValidationTargets if i == '1')
+    print (ones)
+    
+    TP = sum(
+        1 if ((result[x] == "1") & (ValidationTargets[x] == "1")) else 0 for x in range(0, len(result)))
+    TN = sum(
+        1 if ((result[x] == "0") & (ValidationTargets[x] == "0")) else 0 for x in range(0, len(result)))
+    FP = sum(
+        1 if ((result[x] == "1") & (ValidationTargets[x] == "0")) else 0 for x in range(0, len(result)))
+    FN = sum(
+        1 if ((result[x] == "0") & (ValidationTargets[x] == "1")) else 0 for x in range(0, len(result)))
+    PR = TP / (TP + FP)
+    
+    Training = []
+    TrainingTargets = []
+    Validation = []
+    ValidationTargets = []
+
+#Ab ones einzusetzen
+
+'''   #'n_estimators': range(20, 100, 10), 'learning_rate': np.arange(0.01, 0.1, 0.01)
+
+
+
+
+    Training = []
+    TrainingTargets = []
+    Validation = []
+    ValidationTargets = []
+    for x in range(len(File)):
+        if random.uniform(0, 1) >= 0: #Steht bewusst auf 0 damit bei der Cross-Validation keine Information Verloren geht
+            Training.append(File[x][0]); TrainingTargets.append(File[x][2])
+        else:
+            Validation.append(File[x][0]); ValidationTargets.append(File[x][2])
+    Training = np.asarray(Training)
+
+    param_test1 = {}
+    gsearch1 = GridSearchCV(
+        estimator=GradientBoostingClassifier(learning_rate=0.1, min_samples_split=7, min_samples_leaf=40, max_depth=8,
+                                             max_features='sqrt', subsample=0.8, random_state=10),
+
+
+                            param_grid = param_test1, scoring = 'roc_auc', n_jobs = 4, iid = False, cv = 5)
+    lb = preprocessing.LabelBinarizer()
+    TrainingTargets = np.array([number[0] for number in lb.fit_transform(TrainingTargets)])
+    gsearch1.fit(Training, TrainingTargets)
+    lb = preprocessing.LabelBinarizer()
+    TrainingTargets = np.array([number[0] for number in lb.fit_transform(TrainingTargets)])
+    print(gsearch1.grid_scores_, gsearch1.best_params_, gsearch1.best_score_)
+    #scores = cross_val_score(clf, Training, TrainingTargets, cv=10, scoring='roc_auc')
+    #print(scores)
+    #print(sum(scores)/10, "  ", j)
+    Training=[]
+    TrainingTargets = []
+    Validation = []
+    ValidationTargets = []
+    for x in range(len(File)):
+        if random.uniform(0, 1) >= 0.2: #Hier keine 0 damit wir den Fit durchführen und prüfen können
+            Training.append(File[x][0]); TrainingTargets.append(File[x][2])
+        else:
+            Validation.append(File[x][0]); ValidationTargets.append(File[x][2])
+    result = gsearch1.predict(Validation)
+    print(result)
+    result1=[]
+    for i in range(len(result)): result1.append(str(result[i]))
+    print (sum (1 for i in range(len(ValidationTargets)) if (result1[i] == ValidationTargets[i]))/(len(ValidationTargets)))
+    ones = sum(1 for i in ValidationTargets if i == '1')
+    print (ones)'''
